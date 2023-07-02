@@ -1,2 +1,2 @@
-# winter_research
+# Winter_research
 Pinocchio as a embodied experience
