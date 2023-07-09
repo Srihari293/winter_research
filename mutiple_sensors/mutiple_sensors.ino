@@ -2,9 +2,13 @@
 
 EmotiBit emotibit;
 
+const size_t dataSize = EmotiBit::MAX_DATA_BUFFER_SIZE;
+float data[dataSize];
+
 // Baselines for sensors
 float baselinePPG = 0;
 float baselineGSR = 0;
+float ppg_val = 0;
 
 // Threshold for what is considered a "spike" (this value needs calibration)
 float spikeThreshold = 10.0;
@@ -26,6 +30,9 @@ void setup() {
 }
 
 void loop() {
+  //Serial.println("emotibit.update()");
+  emotibit.update();
+  
   // Read and record the timestamp
   unsigned long timestamp = millis();
   
@@ -49,8 +56,22 @@ void loop() {
 float readPPG() {
   // Placeholder - use actual code to read PPG value from EmotiBit
   Serial.println("Attempting to call read sensor");
-  emotibit.readSensors();
-  return 1.0;
+  size_t dataAvailable = emotibit.readData(EmotiBit::DataType::PPG_GREEN, &data[0], dataSize);
+  if (dataAvailable > 0)
+  {
+    bool printData = false;
+    if (printData)
+    {
+      for (size_t i = 0; i < dataAvailable && i < dataSize; i++)
+      {
+        // Note that dataAvailable can be larger than dataSize
+        Serial.println(data[i]);
+      }
+    }
+  }
+  Serial.println("ppgval = ");
+  Serial.println(dataAvailable);
+  return dataAvailable;
 }
 
 float readGSR() {
@@ -61,7 +82,10 @@ float readGSR() {
 void checkForSpike(float value, float baseline, int &alertCounter, const char* sensorName) {
   if (abs(value - baseline) > spikeThreshold) {
     alertCounter++;
-    Serial.print("Alert for "); Serial.print(sensorName); Serial.print(". Count: "); Serial.println(alertCounter);
+    Serial.print("Alert for "); 
+    Serial.print(sensorName); 
+    Serial.print(". Count: "); 
+    Serial.println(alertCounter);
   }
 }
 
