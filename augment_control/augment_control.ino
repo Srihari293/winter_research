@@ -19,7 +19,7 @@ void loop() {
   showPressure();
 
   // If blue button is pressed start sucking
-  if ((readBtn(BLUE)||!digitalRead(switch_)) && state != SUCKING) {
+  if ((readBtn(BLUE) || !digitalRead(switch_)) && state != SUCKING) {
     // switch on pumps to 50% power
     switchOnPump(1, 100);
     switchOffPump(2);
