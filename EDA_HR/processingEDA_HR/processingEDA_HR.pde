@@ -1,13 +1,12 @@
 // Reads EmotiBit data from an OSC stream and plots data in a window
-
 import oscP5.*;
 import netP5.*;
 import processing.serial.*;
 
 // ------------ CHANGE PARAMETERS HERE --------------- //
 // Look in EmotiBit Oscilloscope/data/oscOutputSettings.xml for EmotiBit OSC port and addresses
-String oscAddress = "/EmotiBit/0/HR"; 
-String oscAddress2 = "/EmotiBit/0/PPG:IR"; 
+String oscAddress1 = "/EmotiBit/0/HR"; 
+String oscAddress2 = "/EmotiBit/0/EDA"; 
 int oscPort = 12345;
 String arduinoPortName = "COM3"; // Replace with your Arduino's port name
 int arduinoBaudRate = 9600; // Set the same baud rate as used in the Arduino code
@@ -21,8 +20,8 @@ boolean highPass = false; // toggles on/off the high-pass filter
 float hpCut = 1; // adjusts the cut frequency of the high-pass filter
 
 OscP5 oscP5;
+FloatList dataListHR = new FloatList();
 FloatList dataListEDA = new FloatList();
-FloatList dataListPPGIR = new FloatList();
 Serial arduinoPort; // Serial object for Arduino communication
 
 // filter variables
@@ -42,11 +41,11 @@ void setup() {
 // --------------------------------------------------- //
 
 void draw() {
-  if (dataListEDA.size() > 0 && dataListPPGIR.size() > 0) {
+  if (dataListHR.size() > 0 && dataListEDA.size() > 0) {
     // Create data visualizations
+    float dataHR = dataListHR.get(dataListHR.size() - 1); // get the most recent HR data point
     float dataEDA = dataListEDA.get(dataListEDA.size() - 1); // get the most recent EDA data point
-    float dataPPGIR = dataListPPGIR.get(dataListPPGIR.size() - 1); // get the most recent PPG:IR data point
-    sendToArduino(dataEDA, dataPPGIR); // Send EDA data to Arduino
+    sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
   }
 }
 
@@ -54,37 +53,36 @@ void draw() {
 
 // Process incoming OSC message
 void oscEvent(OscMessage theOscMessage) {
-  if (theOscMessage.checkAddrPattern(oscAddress)) {
+  if (theOscMessage.checkAddrPattern(oscAddress1)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
       data = filter(data);
-      dataListEDA.append(data); // store EDA data for plotting and autoscaling
+      dataListHR.append(data); // store EDA data for plotting and autoscaling
     }
   } else if (theOscMessage.checkAddrPattern(oscAddress2)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
-      dataListPPGIR.append(data); // store PPG:IR data for plotting and autoscaling
+      dataListEDA.append(data); // store PPG:IR data for plotting and autoscaling
     }
   }
 }
 
+String strHR;
 String strEDA;
-void sendToArduino(float dataEDA, float dataPPGIR) {
-  //arduinoPort.write("E");
-  //println(dataEDA);
-  //dataEDA = (long) (1000000 * dataEDA);
-  //println("Sending EDA data: " + int(dataEDA));
-
+void sendToArduino(float dataHR, float dataEDA) {
+  
+  // HR
+  strHR = "H"+String.valueOf((int)dataHR)+"\n";
+  println("(P -> A) Sending HR data: " + strHR);
+  arduinoPort.write(strHR); // Send HR data to Arduino as string
+   
   // EDA
-  strEDA = "E"+String.valueOf((int)dataEDA)+"\n";
-  println("Sending EDA data: " + strEDA);
+  strEDA = "E"+String.valueOf(dataEDA)+"\n";
+  println("(P -> A) Sending EDA data: " + dataEDA);
   arduinoPort.write(strEDA); // Send EDA data to Arduino as string
-  delay(175);
-  //arduinoPort.write("P");
-  //println("Sending PPGIR data: " + (int)dataPPGIR);
-  //arduinoPort.write(String.valueOf((int)dataPPGIR)); // Send PPG:IR data to Arduino as string
+  delay(300);
 }
 
 String val;
