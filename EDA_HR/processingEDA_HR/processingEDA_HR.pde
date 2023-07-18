@@ -58,14 +58,16 @@ void oscEvent(OscMessage theOscMessage) {
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
       data = filter(data);
-      dataListHR.append(data); // store EDA data for plotting and autoscaling
+      dataListHR.append(data); // store HR data for plotting and autoscaling
     }
   } else if (theOscMessage.checkAddrPattern(oscAddress2)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
       // data = filter(data);
-      dataListEDA.append(data); // store PPG:IR data for plotting and autoscaling
+      if(data < 2.5){
+        dataListEDA.append(data); // store EDA data for plotting and autoscaling
+      }
     }
   }
 }
@@ -76,13 +78,13 @@ void sendToArduino(float dataHR, float dataEDA) {
   
   // HR
   strHR = "H"+String.valueOf((int)dataHR)+"\n";
-  print("(P -> A) Sending HR data : \t"); println(dataHR);
+  // print("(P -> A) Sending HR data : \t"); println(dataHR);
   arduinoPort.write(strHR); // Send HR data to Arduino as string
    
   // EDA
   strEDA = "E"+String.valueOf(dataEDA)+"\n";
-  println("(P -> A) Sending EDA data: \t" + dataEDA);
-  println();
+  // println("(P -> A) Sending EDA data: \t" + dataEDA);
+  // println();
   arduinoPort.write(strEDA); // Send EDA data to Arduino as string
   delay(300);
 }
