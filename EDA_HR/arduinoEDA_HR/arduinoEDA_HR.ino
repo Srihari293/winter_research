@@ -1,3 +1,13 @@
+#include "programmable_air.h"
+#include <Adafruit_NeoPixel.h>
+
+#define DEBUG 1
+
+int state = UN_KNOWN;
+
+int atmospheric_pressure = 508; // should be around 508
+int switch_ = 9;
+
 char val; // Data received from the serial port
 int ledPin = 11; // Set the pin to digital I/O 13
 bool handshakeDone = false; // Flag to indicate if the handshake is done
@@ -15,9 +25,14 @@ float sum_EDA = 0;
 long int sum_HR = 0;
 float avg_EDA = 0;
 float avg_HR = 0;
+float threshold = 0.7;
+float HR_detection = 0;
+
 
 void setup() {
+  initializePins();
   pinMode(ledPin, OUTPUT); // Set pin as OUTPUT
+  pinMode(switch_, INPUT_PULLUP);
   Serial.begin(9600); // Start serial communication at 9600 bps
 }
 
@@ -77,7 +92,9 @@ void loop() {
 
       //Serial.print("counter: ");
       //Serial.println(i);
-      if (i >= 50 && j >= 50) {
+      
+      // Calibration stage 100 iterations
+      if (i >= 100 && j >= 100) {
         Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
         Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
         Serial.print(" | Min HR: "); Serial.print(min_HR);
@@ -86,6 +103,16 @@ void loop() {
         avg_EDA =  sum_EDA/ (float)j;
         Serial.print(" Average EDA: "); Serial.print(avg_EDA);
         Serial.print(" Average HR : "); Serial.println(avg_HR);
+
+        HR_detection = threshold*(max_HR - avg_HR) + avg_HR;
+        if (curr_HR>HR_detection)
+        {
+           Serial.print("Lies detected!!!!!!");
+           switchOnPump(2, 100);
+           switchOffPump(1);
+           blow();
+           state = BLOWING;
+        }
       }
     }
   }
