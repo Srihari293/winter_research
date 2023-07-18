@@ -9,8 +9,12 @@ int min_HR = 200;
 int max_HR = 0;
 int curr_HR = 0;
 
-int i = 0;
-int j = 0;
+long int i = 0;
+long int j = 0;
+float sum_EDA = 0;
+long int sum_HR = 0;
+float avg_EDA = 0;
+float avg_HR = 0;
 
 void setup() {
   pinMode(ledPin, OUTPUT); // Set pin as OUTPUT
@@ -20,9 +24,9 @@ void setup() {
 void loop() {
   if (!handshakeDone) {
     establishContact(); // Perform handshake with Processing
-   } 
+  }
 
-   else {
+  else {
     if (Serial.available()) {
       val = Serial.read(); // Read data from Processing
 
@@ -34,16 +38,17 @@ void loop() {
           Serial.println(curr_HR);
           max_HR = curr_HR;
         }
-        
+
         else if (curr_HR < min_HR) {
           Serial.print("Min HR assigned: ");
           Serial.println(curr_HR);
           min_HR = curr_HR;
         }
 
-        Serial.print("Current HR: "); Serial.print(curr_HR);
-        Serial.print(" | Max HR: "); Serial.print(max_HR); 
-        Serial.print("| Min HR: "); Serial.println(min_HR);
+        Serial.print("Current HR : "); Serial.print(curr_HR);
+        Serial.print("\t | Max HR : "); Serial.print(max_HR);
+        Serial.print("\t | Min HR : "); Serial.println(min_HR);
+        sum_HR = sum_HR + curr_HR;
         i++;
       }
 
@@ -52,30 +57,35 @@ void loop() {
         curr_EDA = processEDAData(); // Process EDA data
         if (curr_EDA > max_EDA) {
           Serial.print("Max EDA assigned: ");
-          Serial.println(curr_EDA,6);
+          Serial.println(curr_EDA, 6);
           max_EDA = curr_EDA;
         }
-        
+
         else if (curr_EDA < min_EDA) {
           Serial.print("Min EDA assigned: ");
-          Serial.println(curr_EDA,6);
+          Serial.println(curr_EDA, 6);
           min_EDA = curr_EDA;
         }
 
-        Serial.print("Current EDA: "); Serial.print(curr_EDA,6);
-        Serial.print(" | Max EDA: "); Serial.print(max_EDA,6); 
-        Serial.print("| Min EDA: "); Serial.println(min_EDA,6);
-        Serial.print("++++++++++++++++++++++++++++++++++++++++");
+        Serial.print("Current EDA: "); Serial.print(curr_EDA, 6);
+        Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
+        Serial.print(" | Min EDA: "); Serial.println(min_EDA, 6);
+        Serial.println("--------------------------------------------------------------");
+        sum_EDA = sum_EDA + curr_EDA;
         j++;
       }
-      
+
       //Serial.print("counter: ");
       //Serial.println(i);
-      if (i >= 500 && j >= 500) {
-        Serial.print("Min EDA: "); Serial.print(min_EDA,6);
-        Serial.print(" | Max EDA: "); Serial.print(max_EDA,6);
+      if (i >= 50 && j >= 50) {
+        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
+        Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
         Serial.print(" | Min HR: "); Serial.print(min_HR);
         Serial.print(" | Max HR: "); Serial.println(max_HR);
+        avg_HR  =  sum_HR/ (float)i; 
+        avg_EDA =  sum_EDA/ (float)j;
+        Serial.print(" Average EDA: "); Serial.print(avg_EDA);
+        Serial.print(" Average HR : "); Serial.println(avg_HR);
       }
     }
   }
@@ -104,32 +114,29 @@ void establishContact() {
 
 float processEDAData() {
   // Read EDA data from Processing
-   String edaDataString = Serial.readStringUntil('\n');
-   Serial.print("EDA as string: ");
-   Serial.println(edaDataString);
-   //edaDataString=edaDataString.remove(0,1);
+  String edaDataString = Serial.readStringUntil('\n');
+
+  // Serial.print("EDA as string: "); Serial.println(edaDataString);
+
+  //edaDataString=edaDataString.remove(0,1);
   // Convert the string to a float
   float edaData = atof(edaDataString.c_str());
 
   // Send acknowledgement back to Processing
-  Serial.print("E");
-  Serial.println(edaData,6);
-  Serial.println("----------------------");
+  // Serial.print("E"); Serial.println(edaData,6);
   return edaData;
 }
 
 int processHRData() {
   // Read HR data from Processing
-   String HRDataString = Serial.readStringUntil('\n');
-   Serial.print("HR as string: ");
-   Serial.println(HRDataString);
-   //edaDataString=edaDataString.remove(0,1);
+  String HRDataString = Serial.readStringUntil('\n');
+  // Serial.print("HR as string: "); Serial.println(HRDataString);
+  //edaDataString=edaDataString.remove(0,1);
+
   // Convert the string to a float
   int HRData = atoi(HRDataString.c_str());
 
   // Send acknowledgement back to Processing
-  Serial.print("H");
-  Serial.println(HRData);
-  Serial.println("----------------------");
+  // Serial.print("H"); Serial.println(HRData);
   return HRData;
 }
