@@ -1,5 +1,4 @@
 // Reads EmotiBit data from an OSC stream and plots data in a window
-
 import oscP5.*;
 import netP5.*;
 import processing.serial.*;
@@ -65,24 +64,21 @@ void oscEvent(OscMessage theOscMessage) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
-      dataListHR.append(data); // store HR data for plotting and autoscaling
+      dataListHR.append(data); // store PPG:IR data for plotting and autoscaling
     }
   }
 }
 
 String strEDA;
-String strHR;
-void sendToArduino(float dataEDA, float dataHR) {
+void sendToArduino(float dataEDA, float dataPPGIR) {
   // EDA
   strEDA = "E"+String.valueOf(dataEDA)+"\n";
   println("Sending EDA data: " + strEDA);
   arduinoPort.write(strEDA); // Send EDA data to Arduino as string
   delay(175);
-  // HR
-  // strHR = "H"+String.valueOf((int)dataHR)+"\n";
-  // println("Sending HR data: " + strEDA);
-  // arduinoPort.write(strHR); // Send EDA data to Arduino as string
-  // delay(175);
+  //arduinoPort.write("P");
+  println("HR data: " + (int)dataPPGIR);
+  //arduinoPort.write(String.valueOf((int)dataPPGIR)); // Send PPG:IR data to Arduino as string
 }
 
 String val;
@@ -107,14 +103,14 @@ void serialEvent(Serial myPort) {
       }
     } else {
       // Process the received data
-      if (val.startsWith("E")) {
-        float edaData = float(val.substring(1)); // Parse the EDA data
-        println("EDA" + edaData);
-      } 
-      else if (val.startsWith("P")) {
-      int ppgirData = int(val.substring(1)); // Parse the PPGIR data
-      println("PPGIR data received: " + ppgirData);
-       }
+      //if (val.startsWith("E")) {
+        //float edaData = float(val.substring(1)); // Parse the EDA data
+        //println("EDA" + edaData);
+      //} 
+      //else if (val.startsWith("P")) {
+      //int ppgirData = int(val.substring(1)); // Parse the PPGIR data
+      //println("PPGIR data received: " + ppgirData);
+      // }
     }
   }
 }
