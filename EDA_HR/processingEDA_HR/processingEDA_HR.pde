@@ -29,6 +29,9 @@ float lpFiltVal;
 float hpFiltVal;
 boolean firstFilt = false;
 
+// recording statements
+int RightPressed=0;
+boolean calibrationCompleted = false;
 // --------------------------------------------------- //
 
 void setup() {
@@ -46,14 +49,30 @@ void draw() {
     float dataHR = dataListHR.get(dataListHR.size() - 1); // get the most recent HR data point
     float dataEDA = dataListEDA.get(dataListEDA.size() - 1); // get the most recent EDA data point
     if (keyPressed){
-      if (keyCode ==RIGHT){
-        background(255, 0, 0);
-        println("RIGHT key pressed!");
+      if (key=='c'){
+        arduinoPort.write("C");
+        background(255, 255, 255);
+        
       }
-      else if (keyCode ==DOWN){
-        background(255, 255, 0);
-        println("DOWN key pressed!");
+      else if (keyCode==RIGHT){
+        RightPressed++;
+        background(100/RightPressed, 200/RightPressed, 0);
+        if (calibrationCompleted){
+        println("Recording "+RightPressed+"th statement.");
+        for(int a = 0; a < 10; a++){
+        arduinoPort.write("S");  
+        }
+        
+        else{
+          println("ERROR! Calibrate before recording statements.");
+        }
       }
+
+      else if (key=='s'){
+        background(0, 0, 0);
+        println("Stopping "+RightPressed+"th statement");
+      }
+      
     }
     sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
     
@@ -63,22 +82,25 @@ void draw() {
 // --------------------------------------------------- //
 
 // Process incoming OSC message
-void (OscMessage theOscMessage) {
+void oscEvent(OscMessage theOscMessage) {
   if (theOscMessage.checkAddrPattern(oscAddress1)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
       data = filter(data);
-      dataListHR.append(data); // store HR data for plotting and autoscaling
+      if(data < 170.0 && data >0.0){
+        dataListHR.append(data); // store HR data for plotting and autoscaling     
+      }
     }
   } else if (theOscMessage.checkAddrPattern(oscAddress2)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
       float data = theOscMessage.get(n).floatValue();
       // data = filter(data);
-      if(data < 2.5){
+      if(data < 2.0 && data >0.0){
         dataListEDA.append(data); // store EDA data for plotting and autoscaling
       }
+      
     }
   }
 }
@@ -122,14 +144,13 @@ void serialEvent(Serial myPort) {
       }
     } else {
       // Process the received data
-      //if (val.startsWith("E")) {
-        //float edaData = float(val.substring(1)); // Parse the EDA data
-        //println("EDA" + edaData);
-      //} 
-      //else if (val.startsWith("P")) {
-      //int ppgirData = int(val.substring(1)); // Parse the PPGIR data
-      //println("PPGIR data received: " + ppgirData);
-      // }
+      if (calibrationCompleted==false){
+        
+          if (val.equals("Calibration completed")) {
+            println("Calibrated successfully. You may now begin recording statements.");
+            calibrationCompleted=true;
+           }
+      }
     }
   }
 }
