@@ -36,15 +36,15 @@ int statement = 0;
 
 int s1_peaks = 0;
 int s1_counter = 0;
-float s1_sum_HR = 0.0;
+long int s1_sum_HR = 0.0;
 
 int s2_peaks = 0;
 int s2_counter = 0;
-float s2_sum_HR = 0.0;
+long int s2_sum_HR = 0.0;
 
 int s3_peaks = 0;
 int s3_counter = 0;
-float s3_sum_HR = 0.0;
+long int s3_sum_HR = 0.0;
 
 float s1_avg_HR;
 float s2_avg_HR;
@@ -108,6 +108,8 @@ void loop() {
         //delay(100);
         Serial.println("Statement 1 - recording");
         for (int k = 0; k < 250; k++) {
+          //Serial.println("s1 loop");
+          delay(50);
           val = Serial.read();
           if (val == 'H') {            // HR data received
             curr_HR = processHRData(); // Process HR data
@@ -131,6 +133,7 @@ void loop() {
         //delay(100);
         Serial.println("Statement 2 - recording");
         for (int k = 0; k < 250; k++) {
+          delay(50);
           val = Serial.read();
           if (val == 'H') {            // HR data received
             curr_HR = processHRData(); // Process HR data
@@ -155,7 +158,9 @@ void loop() {
         //delay(100);
         Serial.println("Statement 3 - recording");
         for (int k = 0; k < 250; k++) {
+          delay(50);
           val = Serial.read();
+          //Serial.println("s3 loop");
           if (val == 'H') {            // HR data received
             curr_HR = processHRData(); // Process HR data
             if (curr_HR > max_HR) {
@@ -184,7 +189,7 @@ void loop() {
       // Comparing average HR to baseline
 
       // Actuation
-      // actuation();
+      actuation();
 
       //      if (calibrated == 1) {
       //        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);

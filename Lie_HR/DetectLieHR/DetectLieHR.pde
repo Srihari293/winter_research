@@ -61,7 +61,6 @@ void draw() {
             //for (int i=0;  i<10; i++){
               arduinoPort.write("X");   
             //}
-
         }
         
         else if(key=='2'){
