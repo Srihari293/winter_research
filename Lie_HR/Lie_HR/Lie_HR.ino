@@ -369,30 +369,8 @@ void hrComparison() {
   }
 }
 
-void hrComparison() {
-  if (s1_diff >= s2_diff && s1_diff >= s3_diff)
-  {
-    lie_flag = 1;
-  }
-
-  // check if n2 is the largest number
-  else if (s2_diff >= s1_diff && s2_diff >= s3_diff)
-  {
-    lie_flag = 2;
-  }
-
-  else
-  {
-    lie_flag = 3;
-  }
-}
-
 void findMetrics() {
   s1_avg_HR = s1_sum_HR / (float)s1_counter;
   s2_avg_HR = s2_sum_HR / (float)s2_counter;
   s3_avg_HR = s3_sum_HR / (float)s3_counter;
-
-  s1_diff = s1_avg_HR - avg_HR;
-  s2_diff = s2_avg_HR - avg_HR;
-  s3_diff = s3_avg_HR - avg_HR;
 }
