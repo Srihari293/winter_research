@@ -51,39 +51,42 @@ void loop() {
       }
 
       if (callibration == 1) {
-
+        startCallibration();
         delay(1000);
         Serial.println("Calibration completed");
         callibration = 0;
       }
 
+      // Reading current EDA value for lie detection
+      curr_HR = processHRData(); 
+      curr_EDA = processEDAData(); 
+      
       // Heart rate processing
       //Serial.print("counter: ");
       //Serial.println(i);
-
-      // Calibration stage 100 iterations
+      avg_HR  =  sum_HR / (float)i;
+      avg_EDA =  sum_EDA / (float)j;
+      
+      
       if (i >= 50 && j >= 50) {
         Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
-        Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
-        Serial.print(" | Min HR: "); Serial.print(min_HR);
-        Serial.print(" | Max HR: "); Serial.println(max_HR);
-        avg_HR  =  sum_HR / (float)i;
-        avg_EDA =  sum_EDA / (float)j;
+        Serial.print(" \t| Max EDA: "); Serial.println(max_EDA, 6);
+        Serial.print(" Min HR: "); Serial.print(min_HR);
+        Serial.print(" \t| Max HR: "); Serial.println(max_HR);
         Serial.print(" Average EDA: "); Serial.print(avg_EDA);
-        Serial.print(" Average HR : "); Serial.println(avg_HR);
-
+        Serial.print(" \t| Average HR : "); Serial.println(avg_HR);
+        Serial.print(" Current EDA: "); Serial.print(curr_EDA);
+        Serial.print(" \t| Current HR: "); Serial.println(curr_HR);
+        Serial.println("-------------------------------------------------------");
         HR_detection = threshold * (max_HR - avg_HR) + avg_HR;
         if (curr_HR > 115)
         {
           Serial.println("Lie detected!");
           Serial.print("Current HR: ");
           Serial.print(curr_HR);
-
           Serial.println("\t HR baseline: ");
           Serial.println(HR_detection);
-
           actuateNose();
-
         }
       }
     }
@@ -169,7 +172,7 @@ void actuateNose() {
 void startCallibration() {
   for (int calib = 0; calib < 200; calib++) {
     val = Serial.read();
-
+    
     if (val == 'H') {            // HR data received
       curr_HR = processHRData(); // Process HR data
       if (curr_HR > max_HR) {
@@ -213,6 +216,7 @@ void startCallibration() {
       sum_EDA = sum_EDA + curr_EDA;
       j++;
     }
+    delay(100);
     Serial.print("Callibration iteration = "); Serial.println(calib);
   }
 }
