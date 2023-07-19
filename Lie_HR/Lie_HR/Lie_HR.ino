@@ -95,8 +95,8 @@ void loop() {
 
       // Reading current EDA value for lie detection
       val = Serial.read();
-      Serial.println(val);
-      // delay(100);
+      Serial.print(val);
+      delay(100);
       
       if (val == 'E') {
         curr_EDA = processEDAData();

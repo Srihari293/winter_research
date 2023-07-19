@@ -51,22 +51,31 @@ void draw() {
   
     if (keyPressed){
       if (key=='c'){
+        println("I am at C");
         arduinoPort.write("C");
         background(255, 255, 255);       
       }
         else if (key=='1')
         {
             println("Recording first statement.");       
-            for (int i=0;  i<10; i++){
+            //for (int i=0;  i<10; i++){
               arduinoPort.write("X");   
-            }
-        }   
-        else if (key=='2'){
-          arduinoPort.write("Y");  
+            //}
+
         }
+        
+        else if(key=='2'){
+        arduinoPort.write("Y");
+        }
+        
         else if (key=='3'){
         arduinoPort.write("Z");  
         }
+        
+        else if (key=='s'){
+        arduinoPort.write("S"); 
+        }
+        
         else if (key=='4'){
         arduinoPort.write("x"); 
         }
