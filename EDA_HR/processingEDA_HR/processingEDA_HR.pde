@@ -32,7 +32,7 @@ boolean firstFilt = false;
 // --------------------------------------------------- //
 
 void setup() {
-  size(620, 840);
+  size(320, 320);
   /* start oscP5, listening for incoming messages at port 12345 */
   oscP5 = new OscP5(this, oscPort);
   arduinoPort = new Serial(this, arduinoPortName, arduinoBaudRate);
@@ -45,14 +45,25 @@ void draw() {
     // Create data visualizations
     float dataHR = dataListHR.get(dataListHR.size() - 1); // get the most recent HR data point
     float dataEDA = dataListEDA.get(dataListEDA.size() - 1); // get the most recent EDA data point
+    if (keyPressed){
+      if (keyCode ==RIGHT){
+        background(255, 0, 0);
+        println("RIGHT key pressed!");
+      }
+      else if (keyCode ==DOWN){
+        background(255, 255, 0);
+        println("DOWN key pressed!");
+      }
+    }
     sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
+    
   }
 }
 
 // --------------------------------------------------- //
 
 // Process incoming OSC message
-void oscEvent(OscMessage theOscMessage) {
+void (OscMessage theOscMessage) {
   if (theOscMessage.checkAddrPattern(oscAddress1)) {
     Object[] args = theOscMessage.arguments();
     for (int n = 0; n < args.length; n++) {
@@ -103,7 +114,7 @@ void serialEvent(Serial myPort) {
     // Look for our 'A' string to start the handshake
     // If it's there, clear the buffer, and send a request for data
     if (firstContact == false) {
-      if (val.equals("A")) {
+      if (val.equals("B")) {
         myPort.clear();
         firstContact = true;
         myPort.write("A");
