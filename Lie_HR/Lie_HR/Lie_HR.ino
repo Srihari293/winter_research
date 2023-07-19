@@ -73,7 +73,7 @@ void loop() {
         Serial.println("Calibration starting");
         calibration = 1;
       }
-      
+
       if (val == 'S') {
         statement++;
         Serial.print("Recording started for statement"); Serial.println(statement);
@@ -167,32 +167,8 @@ void loop() {
       // Comparing average HR to baseline
       hrComparison();
 
-      // Compare statements with baseline to find change in spikes
-      else if (val == 'x')
-      {
-        if (lie_flag == 1)
-        {
-          actuateNose();
-        }
-      }
-
-      else if (val == 'y')
-      {
-        if (lie_flag == 2)
-        {
-          actuateNose();
-        }
-      }
-
-
-      else if (val == 'z')
-      {
-        if (lie_flag == 3)
-        {
-          actuateNose();
-        }
-      }
-
+      // Actuation
+      actuation();
 
       //      if (calibrated == 1) {
       //        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
@@ -373,4 +349,21 @@ void findMetrics() {
   s1_avg_HR = s1_sum_HR / (float)s1_counter;
   s2_avg_HR = s2_sum_HR / (float)s2_counter;
   s3_avg_HR = s3_sum_HR / (float)s3_counter;
+}
+
+void actuation() {
+  if (val == 'x' && lie_flag == 1)
+  {
+    actuateNose();
+  }
+
+  else if (val == 'y' && lie_flag == 2)
+  {
+    actuateNose();
+  }
+
+  else if (val == 'z' && lie_flag == 3)
+  {
+    actuateNose();
+  }
 }
