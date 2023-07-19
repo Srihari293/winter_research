@@ -6,10 +6,10 @@
 int state = UN_KNOWN;
 
 int atmospheric_pressure = 508; // should be around 508
-int switch_ = 9;
+int switch_ = 11;
 
 char val; // Data received from the serial port
-int ledPin = 11; // Set the pin to digital I/O 13
+// int ledPin = 11; // Set the pin to digital I/O 13
 bool handshakeDone = false; // Flag to indicate if the handshake is done
 float min_EDA = 200;
 float max_EDA = 0;
@@ -19,19 +19,20 @@ int min_HR = 200;
 int max_HR = 0;
 int curr_HR = 0;
 
+int c = 0;
 long int i = 0;
 long int j = 0;
 float sum_EDA = 0;
 long int sum_HR = 0;
 float avg_EDA = 0;
 float avg_HR = 0;
-float threshold = 0.7;
+float threshold = 0;
 float HR_detection = 0;
 
 
 void setup() {
   initializePins();
-  pinMode(ledPin, OUTPUT); // Set pin as OUTPUT
+//  pinMode(ledPin, OUTPUT); // Set pin as OUTPUT
   pinMode(switch_, INPUT_PULLUP);
   Serial.begin(9600); // Start serial communication at 9600 bps
 }
@@ -92,26 +93,56 @@ void loop() {
 
       //Serial.print("counter: ");
       //Serial.println(i);
-      
+
       // Calibration stage 100 iterations
-      if (i >= 100 && j >= 100) {
+      if (i >= 50 && j >= 50) {
         Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
         Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
         Serial.print(" | Min HR: "); Serial.print(min_HR);
         Serial.print(" | Max HR: "); Serial.println(max_HR);
-        avg_HR  =  sum_HR/ (float)i; 
-        avg_EDA =  sum_EDA/ (float)j;
+        avg_HR  =  sum_HR / (float)i;
+        avg_EDA =  sum_EDA / (float)j;
         Serial.print(" Average EDA: "); Serial.print(avg_EDA);
         Serial.print(" Average HR : "); Serial.println(avg_HR);
 
-        HR_detection = threshold*(max_HR - avg_HR) + avg_HR;
-        if (curr_HR>HR_detection)
+        HR_detection = threshold * (max_HR - avg_HR) + avg_HR;
+        if (curr_HR > 90)
         {
-           Serial.print("Lies detected!!!!!!");
-           switchOnPump(2, 100);
-           switchOffPump(1);
-           blow();
-           state = BLOWING;
+          Serial.println("Lie detected!");
+          Serial.print("Current HR: ");
+          Serial.print(curr_HR);
+          
+          Serial.println("\t HR baseline: ");
+          Serial.println(HR_detection);
+          
+          // if red button is pressed, start blowing
+          //Serial.print("Serial");
+          //Serial.println(state);
+          if (state != BLOWING) {
+            Serial.println("Blowing");
+            for(c = 0; c < 1000; c++)
+            {
+            // switch on pumps to 50% power
+            switchOnPump(2, 100);   
+            switchOffPump(1);
+            Serial.println(c);
+            blow();
+            
+            state = BLOWING;
+            }
+          }
+
+          // if nither button is pressed, vent (but blow for a bit to let go of the object)
+          else if (state != VENTING && digitalRead(switch_)) {
+            Serial.println("Vent");
+            switchOnPump(1, 100);
+            blow();
+            Serial.println("Resetting");
+            // delayWhileReadingPressure(250);
+            switchOffPumps();
+            vent();
+            state = VENTING;
+          }
         }
       }
     }
@@ -129,11 +160,11 @@ void establishContact() {
         Serial.println("A"); // Respond with 'A' to confirm contact
         Serial.println("here");
         handshakeDone = true; // Handshake is done
-        digitalWrite(ledPin, HIGH); // Turn on the LED to indicate successful handshake
+        // digitalWrite(ledPin, HIGH); // Turn on the LED to indicate successful handshake
         Serial.println("here2");
       }
     } else {
-      Serial.println("A"); // Send 'A' to request contact
+      Serial.println("A"); // Send 'A' contact
       delay(300);
     }
   }

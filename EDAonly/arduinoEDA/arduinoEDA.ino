@@ -20,6 +20,7 @@ void loop() {
 
    else {
     if (Serial.available()) {
+      
       val = Serial.read(); // Read data from Processing
 
       if (val == 'E') { // EDA data received
