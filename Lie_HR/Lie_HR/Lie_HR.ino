@@ -67,20 +67,19 @@ void loop() {
   else {
     if (Serial.available()) {
       val = Serial.read(); // Read data from Processing
-      Serial.print("Val");
-      Serial.println(val);
+      // Serial.print("Val");
+      // Serial.println(val);
       if (val == 'C') {
         Serial.println("Calibration starting");
         calibration = 1;
       }
 
-      if (val == 'S') {
-        statement++;
-        Serial.print("Recording started for statement"); Serial.println(statement);
-      }
+//      if (val == 'S') {
+//        statement++;
+//        Serial.print("Recording started for statement"); Serial.println(statement);
+//      }
 
-      Serial.print("Statement - ");
-      Serial.println(statement);
+      
 
       if (calibration == 1) {
         startCalibration();
@@ -96,6 +95,9 @@ void loop() {
 
       // Reading current EDA value for lie detection
       val = Serial.read();
+      Serial.println(val);
+      // delay(100);
+      
       if (val == 'E') {
         curr_EDA = processEDAData();
       }
@@ -103,12 +105,11 @@ void loop() {
       else if (val == 'H') {
         curr_HR = processHRData();
       }
-
+      
       else if (val == 'X')
       {
+        
         Serial.println("Statement 1 - recording");
-        val = Serial.read();
-
         if (val == 'H') {            // HR data received
           curr_HR = processHRData(); // Process HR data
           if (curr_HR > max_HR) {
@@ -126,8 +127,6 @@ void loop() {
       else if (val == 'Y')
       {
         Serial.println("Statement 2  - recording");
-        val = Serial.read();
-
         if (val == 'H') {            // HR data received
           curr_HR = processHRData(); // Process HR data
           if (curr_HR > max_HR) {
@@ -145,8 +144,6 @@ void loop() {
       else if (val == 'Z')
       {
         Serial.println("Statement 3 - recording");
-        val = Serial.read();
-
         if (val == 'H') {            // HR data received
           curr_HR = processHRData(); // Process HR data
           if (curr_HR > max_HR) {

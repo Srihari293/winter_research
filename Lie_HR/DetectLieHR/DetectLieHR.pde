@@ -41,43 +41,49 @@ void setup() {
   arduinoPort = new Serial(this, arduinoPortName, arduinoBaudRate);
 }
 
-// --------------------------------------------------- //
+// --------------------------------------------------- //  
 
 void draw() {
   if (dataListHR.size() > 0 && dataListEDA.size() > 0) {
     // Create data visualizations
     float dataHR = dataListHR.get(dataListHR.size() - 1); // get the most recent HR data point
     float dataEDA = dataListEDA.get(dataListEDA.size() - 1); // get the most recent EDA data point
+  
     if (keyPressed){
       if (key=='c'){
         arduinoPort.write("C");
-        background(255, 255, 255);
-        
+        background(255, 255, 255);       
       }
-      else if (keyCode==RIGHT){
-        RightPressed++;
-        background(100/RightPressed, 200/RightPressed, 0);
-        if (calibrationCompleted){
-        println("Recording "+RightPressed+"th statement.");
-        for(int a = 0; a < 10; a++){
-        arduinoPort.write("S");  
+        else if (key=='1')
+        {
+            println("Recording first statement.");       
+            for (int i=0;  i<10; i++){
+              arduinoPort.write("X");   
+            }
+        }   
+        else if (key=='2'){
+          arduinoPort.write("Y");  
+        }
+        else if (key=='3'){
+        arduinoPort.write("Z");  
+        }
+        else if (key=='4'){
+        arduinoPort.write("x"); 
+        }
+        else if (key=='5'){
+        arduinoPort.write("y"); 
+        }
+        else if (key=='6'){
+        arduinoPort.write("z"); 
         }
         
-        else{
-          println("ERROR! Calibrate before recording statements.");
-        }
-      }
-
-      else if (key=='s'){
-        background(0, 0, 0);
-        println("Stopping "+RightPressed+"th statement");
-      }
       
-    }
-    sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
+      }
     
+    sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
+    }
   }
-}
+
 
 // --------------------------------------------------- //
 
@@ -144,13 +150,13 @@ void serialEvent(Serial myPort) {
       }
     } else {
       // Process the received data
-      if (calibrationCompleted==false){
+    
         
-          if (val.equals("Calibration completed")) {
-            println("Calibrated successfully. You may now begin recording statements.");
-            calibrationCompleted=true;
-           }
-      }
+      if (val.equals("Calibration completed")) {
+        println("Calibrated successfully. You may now begin recording statements.");
+        
+       }
+      
     }
   }
 }
