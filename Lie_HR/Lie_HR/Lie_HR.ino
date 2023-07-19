@@ -17,7 +17,7 @@ float curr_EDA = 0;
 
 int min_HR = 200;
 int max_HR = 0;
-int curr_HR = 0; 
+int curr_HR = 0;
 
 int c = 0;
 long int i = 0;
@@ -33,6 +33,25 @@ int calibration = 0;
 int calib_iterations = 200;
 int calibrated = 0;
 int statement = 0;
+
+float s1_avg_HR = 0;
+float s2_avg_HR = 0;
+float s3_avg_HR = 0;
+
+int s1_counter;
+int s2_counter;
+int s3_counter;
+
+int s1_peaks;
+int s2_peaks;
+int s3_peaks;
+
+float s1_sum_HR;
+float s2_sum_HR;
+float s3_sum_HR;
+
+int lie_flag = 0;
+
 void setup() {
   initializePins();
   //  pinMode(ledPin, OUTPUT); // Set pin as OUTPUT
@@ -54,11 +73,12 @@ void loop() {
         Serial.println("Calibration starting");
         calibration = 1;
       }
-      if (val =='S'){
+      
+      if (val == 'S') {
         statement++;
         Serial.print("Recording started for statement"); Serial.println(statement);
-        }
-      
+      }
+
       Serial.print("Statement - ");
       Serial.println(statement);
 
@@ -75,31 +95,119 @@ void loop() {
 
 
       // Reading current EDA value for lie detection
-      val=Serial.read();
-      if (val=='E'){
-          curr_EDA = processEDAData();
+      val = Serial.read();
+      if (val == 'E') {
+        curr_EDA = processEDAData();
       }
-      else if(val=='H'){
-         curr_HR = processHRData();
-      }
-     
-    
-      
 
-//      if (calibrated == 1) {
-//        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
-//        Serial.print(" \t| Max EDA: "); Serial.println(max_EDA, 6);
-//        Serial.print(" Min HR: "); Serial.print(min_HR);
-//        Serial.print(" \t| Max HR: "); Serial.println(max_HR);
-//        Serial.print(" Average EDA: "); Serial.print(avg_EDA,6);
-//        Serial.print(" \t| Average HR : "); Serial.println(avg_HR);
-//        Serial.print(" Current EDA: "); Serial.print(curr_EDA,6);
-//        Serial.print(" \t| Current HR: "); Serial.println(curr_HR);
-//        Serial.println("-------------------------------------------------------");
-//
-//        // detectLieHR(HR_baseline);
-//        // delay(125);
-//      }
+      else if (val == 'H') {
+        curr_HR = processHRData();
+      }
+
+      else if (val == 'X')
+      {
+        Serial.println("Statement 1 - recording");
+        val = Serial.read();
+
+        if (val == 'H') {            // HR data received
+          curr_HR = processHRData(); // Process HR data
+          if (curr_HR > max_HR) {
+            Serial.print("Max HR assigned: ");
+            Serial.println(curr_HR);
+            max_HR = curr_HR;
+            s1_peaks++;
+          }
+
+          s1_sum_HR = s1_sum_HR + curr_HR;
+          s1_counter++;
+        }
+      }
+
+      else if (val == 'Y')
+      {
+        Serial.println("Statement 2  - recording");
+        val = Serial.read();
+
+        if (val == 'H') {            // HR data received
+          curr_HR = processHRData(); // Process HR data
+          if (curr_HR > max_HR) {
+            Serial.print("Max HR assigned: ");
+            Serial.println(curr_HR);
+            max_HR = curr_HR;
+            s2_peaks++;
+          }
+
+          s2_sum_HR = s2_sum_HR + curr_HR;
+          s2_counter++;
+        }
+      }
+
+      else if (val == 'Z')
+      {
+        Serial.println("Statement 3 - recording");
+        val = Serial.read();
+
+        if (val == 'H') {            // HR data received
+          curr_HR = processHRData(); // Process HR data
+          if (curr_HR > max_HR) {
+            Serial.print("Max HR assigned: ");
+            Serial.println(curr_HR);
+            max_HR = curr_HR;
+            s3_peaks++;
+          }
+
+          s3_sum_HR = s3_sum_HR + curr_HR;
+          s3_counter++;
+        }
+      }
+
+      // Going statement wise during comparison
+      findMetrics();
+
+      // Comparing average HR to baseline
+      hrComparison();
+
+      // Compare statements with baseline to find change in spikes
+      else if (val == 'x')
+      {
+        if (lie_flag == 1)
+        {
+          actuateNose();
+        }
+      }
+
+      else if (val == 'y')
+      {
+        if (lie_flag == 2)
+        {
+          actuateNose();
+        }
+      }
+
+
+      else if (val == 'z')
+      {
+        if (lie_flag == 3)
+        {
+          actuateNose();
+        }
+      }
+
+
+      //      if (calibrated == 1) {
+      //        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
+      //        Serial.print(" \t| Max EDA: "); Serial.println(max_EDA, 6);
+      //        Serial.print(" Min HR: "); Serial.print(min_HR);
+      //        Serial.print(" \t| Max HR: "); Serial.println(max_HR);
+      //        Serial.print(" Average EDA: "); Serial.print(avg_EDA,6);
+      //        Serial.print(" \t| Average HR : "); Serial.println(avg_HR);
+      //        Serial.print(" Current EDA: "); Serial.print(curr_EDA,6);
+      //        Serial.print(" \t| Current HR: "); Serial.println(curr_HR);
+      //        Serial.println("-------------------------------------------------------");
+      //
+      //        // detectLieHR(HR_baseline);
+      //        // delay(125);
+      //      }
     }
   }
 }
@@ -137,7 +245,7 @@ float processEDAData() {
 
   // Uncomment and use for Debugging - Send acknowledgement back to Processing
   Serial.print("EDA as string: "); Serial.println(edaDataString);
-  Serial.print("E"); Serial.println(edaData,6);
+  Serial.print("E"); Serial.println(edaData, 6);
 
   return edaData;
 }
@@ -241,4 +349,50 @@ void detectLieHR(float HR_baseline) {
     Serial.println(HR_baseline);
     actuateNose();
   }
+}
+
+void hrComparison() {
+  if (s1_avg_HR >= s2_avg_HR && s1_avg_HR >= s3_avg_HR)
+  {
+    lie_flag = 1;
+  }
+
+  // check if n2 is the largest number
+  else if (s2_avg_HR >= s1_avg_HR && s2_avg_HR >= s3_avg_HR)
+  {
+    lie_flag = 2;
+  }
+
+  else
+  {
+    lie_flag = 3;
+  }
+}
+
+void hrComparison() {
+  if (s1_diff >= s2_diff && s1_diff >= s3_diff)
+  {
+    lie_flag = 1;
+  }
+
+  // check if n2 is the largest number
+  else if (s2_diff >= s1_diff && s2_diff >= s3_diff)
+  {
+    lie_flag = 2;
+  }
+
+  else
+  {
+    lie_flag = 3;
+  }
+}
+
+void findMetrics() {
+  s1_avg_HR = s1_sum_HR / (float)s1_counter;
+  s2_avg_HR = s2_sum_HR / (float)s2_counter;
+  s3_avg_HR = s3_sum_HR / (float)s3_counter;
+
+  s1_diff = s1_avg_HR - avg_HR;
+  s2_diff = s2_avg_HR - avg_HR;
+  s3_diff = s3_avg_HR - avg_HR;
 }

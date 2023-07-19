@@ -62,7 +62,7 @@ void draw() {
         for(int a = 0; a < 10; a++){
         arduinoPort.write("S");  
         }
-        
+        }
         else{
           println("ERROR! Calibrate before recording statements.");
         }
