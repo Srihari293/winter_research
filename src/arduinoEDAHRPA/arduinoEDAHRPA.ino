@@ -180,7 +180,7 @@ void loop() {
         }
       }
 
-      else if (val == 'S')
+      else if (val == 'S')  
       {
         findMetrics();
         hrComparison();

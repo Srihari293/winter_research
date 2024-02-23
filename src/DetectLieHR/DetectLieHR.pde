@@ -8,7 +8,7 @@ import processing.serial.*;
 String oscAddress1 = "/EmotiBit/0/HR"; 
 String oscAddress2 = "/EmotiBit/0/EDA"; 
 int oscPort = 12345;
-String arduinoPortName = "COM3"; // Replace with your Arduino's port name
+String arduinoPortName = "COM7"; // Replace with your Arduino's port name
 int arduinoBaudRate = 9600; // Set the same baud rate as used in the Arduino code
 // --------------------------------------------------- //
 
