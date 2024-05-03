@@ -14,6 +14,7 @@ bool handshakeDone = false; // Flag to indicate if the handshake is done
 float min_EDA = 200;
 float max_EDA = 0;
 float curr_EDA = 0;
+float base_line = 75.0;
 
 int min_HR = 200;
 int max_HR = 0;
@@ -80,7 +81,7 @@ void loop() {
       // Serial.println(statement);
 
       if (calibration == 1) {
-        startCalibration();
+//        startCalibration();
         delay(1000);
         Serial.println("Calibration completed");
         calibration = 0;
@@ -101,76 +102,19 @@ void loop() {
 
       else if (val == 'H') {
         curr_HR = processHRData();
-      }
-
-      else if (val == 'X')
-      {
-        //delay(100);
-        Serial.println("Statement 1 - recording");
-        for (int k = 0; k < 250; k++) {
-          //Serial.println("s1 loop");
-          delay(50);
-          val = Serial.read();
-          if (val == 'H') {            // HR data received
-            curr_HR = processHRData(); // Process HR data
-            if (curr_HR > max_HR) {
-              Serial.print("Max HR assigned: ");
-              Serial.println(curr_HR);
-              max_HR = curr_HR;
-              s1_peaks++;
-            }
-            s1_sum_HR = s1_sum_HR + curr_HR;
-//            Serial.print("S sum");
-//            Serial.println(s1_sum_HR);
-//            Serial.print("k: ");
-//            Serial.println(k);
-            s1_counter++;
-          }
-        }
-      Serial.println("Statement 1 - Completed");
-      }
-      else if (val == 'Y')
-      {
-        //delay(100);
-        Serial.println("Statement 2 - recording");
-        for (int k = 0; k < 250; k++) {
-          delay(50);
-          val = Serial.read();
-          if (val == 'H') {            // HR data received
-            curr_HR = processHRData(); // Process HR data
-            if (curr_HR > max_HR) {
-              Serial.print("Max HR assigned: ");
-              Serial.println(curr_HR);
-              max_HR = curr_HR;
-              s2_peaks++;
-            }
-
-            s2_sum_HR = s2_sum_HR + curr_HR;
-//            Serial.print("S2 SUM");
-//            Serial.println(s2_sum_HR);
-//            Serial.print("k: ");
-//            Serial.println(k);
-            s2_counter++;
-          }
-        }
-      Serial.println("Statement 2 - Completed");
-      }
-      else if (val == 'Z')
-      {
-        //delay(100);
         Serial.println("Statement 3 - recording");
-        for (int k = 0; k < 250; k++) {
+        for (int k = 0; k < 300; k++) {
           delay(50);
           val = Serial.read();
           //Serial.println("s3 loop");
           if (val == 'H') {            // HR data received
             curr_HR = processHRData(); // Process HR data
-            if (curr_HR > max_HR) {
-              Serial.print("Max HR assigned: ");
-              Serial.println(curr_HR);
-              max_HR = curr_HR;
-              s3_peaks++;
-            }
+//            if (curr_HR > max_HR) {
+//              Serial.print("Max HR assigned: ");
+//              Serial.println(curr_HR);
+//              max_HR = curr_HR;
+//              s3_peaks++;
+//            }
 
             s3_sum_HR = s3_sum_HR + curr_HR;
 //            Serial.print("S3 sum");
@@ -180,21 +124,111 @@ void loop() {
             s3_counter++;
           }
         }
-      Serial.println("Statement 3 - Completed");  
+        float avg = s3_sum_HR/s3_counter;
+        Serial.println("avg");
+        Serial.println(avg);
+        delay(2000);
+        if(avg > base_line){
+          actuateNose();
+          delay(2000);
+        }
+        s3_sum_HR = 0;
+        s3_counter = 0;
+        }
       }
 
-      else if (val == 'S')
-      {
-        Serial.println("Statements being saved\nCalculating metrics");
-        findMetrics();
-        hrComparison();
-        Serial.println("Calculations completed");
-      }
+//      else if (val == 'X')
+//      {
+//        //delay(100);
+//        Serial.println("Statement 1 - recording");
+//        for (int k = 0; k < 250; k++) {
+//          //Serial.println("s1 loop");
+//          delay(50);
+//          val = Serial.read();
+//          if (val == 'H') {            // HR data received
+//            curr_HR = processHRData(); // Process HR data
+//            if (curr_HR > max_HR) {
+//              Serial.print("Max HR assigned: ");
+//              Serial.println(curr_HR);
+//              max_HR = curr_HR;
+//              s1_peaks++;
+//            }
+//            s1_sum_HR = s1_sum_HR + curr_HR;
+////            Serial.print("S sum");
+////            Serial.println(s1_sum_HR);
+////            Serial.print("k: ");
+////            Serial.println(k);
+//            s1_counter++;
+//          }
+//        }
+//      Serial.println("Statement 1 - Completed");
+//      }
+//      else if (val == 'Y')
+//      {
+//        //delay(100);
+//        Serial.println("Statement 2 - recording");
+//        for (int k = 0; k < 250; k++) {
+//          delay(50);
+//          val = Serial.read();
+//          if (val == 'H') {            // HR data received
+//            curr_HR = processHRData(); // Process HR data
+//            if (curr_HR > max_HR) {
+//              Serial.print("Max HR assigned: ");
+//              Serial.println(curr_HR);
+//              max_HR = curr_HR;
+//              s2_peaks++;
+//            }
+//
+//            s2_sum_HR = s2_sum_HR + curr_HR;
+////            Serial.print("S2 SUM");
+////            Serial.println(s2_sum_HR);
+////            Serial.print("k: ");
+////            Serial.println(k);
+//            s2_counter++;
+//          }
+//        }
+//      Serial.println("Statement 2 - Completed");
+//      }
+//      else if (val == 'Z')
+//      {
+//        //delay(100);
+//        Serial.println("Statement 3 - recording");
+//        for (int k = 0; k < 250; k++) {
+//          delay(50);
+//          val = Serial.read();
+//          //Serial.println("s3 loop");
+//          if (val == 'H') {            // HR data received
+//            curr_HR = processHRData(); // Process HR data
+//            if (curr_HR > max_HR) {
+//              Serial.print("Max HR assigned: ");
+//              Serial.println(curr_HR);
+//              max_HR = curr_HR;
+//              s3_peaks++;
+//            }
+//
+//            s3_sum_HR = s3_sum_HR + curr_HR;
+////            Serial.print("S3 sum");
+////            Serial.println(s3_sum_HR);
+////            Serial.print("k: ");
+////            Serial.println(k);
+//            s3_counter++;
+//          }
+//        }
+//      Serial.println("Statement 3 - Completed");  
+//      }
+
+//      else if (val == 'C')
+//      {
+//        Serial.println("Statements being saved\nCalculating metrics");
+//        findMetrics();
+//        hrComparison();
+//        Serial.println("Calculations completed");
+//      }
 
       // Comparing average HR to baseline
 
       // Actuation
-      actuation();
+//      actuation();
 
       //      if (calibrated == 1) {
       //        Serial.print("Min EDA: "); Serial.print(min_EDA, 6);
@@ -212,7 +246,6 @@ void loop() {
       //      }
     }
   }
-}
 
 
 void establishContact()
@@ -267,15 +300,20 @@ void actuateNose() {
   if (state != BLOWING) {
     // Serial.println("Blowing");
 
-    for (c = 0; c < 450; c++)
+    for (c = 0; c < 100; c++)
     {
       // switch on pumps to 50% power
       switchOnPump(2, 100);
       switchOffPump(1);
       // Serial.println(c);
       blow();
+      Serial.println("Blowing");
+      Serial.println(c);
       state = BLOWING;
     }
+    Serial.println("Done blowing");
+    state = UN_KNOWN;
+    switchOffPump(2);
   }
 
   // if not blowing, vent to reset the nose state
@@ -287,114 +325,5 @@ void actuateNose() {
     switchOffPumps();
     vent();
     state = VENTING;
-  }
-}
-
-void startCalibration() {
-  for (int calib = 0; calib < calib_iterations; calib++) {
-    val = Serial.read();
-
-    if (val == 'H') {            // HR data received
-      curr_HR = processHRData(); // Process HR data
-      if (curr_HR > max_HR) {
-        Serial.print("Max HR assigned: ");
-        Serial.println(curr_HR);
-        max_HR = curr_HR;
-      }
-
-      else if (curr_HR < min_HR) {
-        Serial.print("Min HR assigned: ");
-        Serial.println(curr_HR);
-        min_HR = curr_HR;
-      }
-
-      Serial.print("Current HR : "); Serial.print(curr_HR);
-      Serial.print("\t | Max HR : "); Serial.print(max_HR);
-      Serial.print("\t | Min HR : "); Serial.println(min_HR);
-      sum_HR = sum_HR + curr_HR;
-      i++;
-    }
-
-    // EDA processing
-    if (val == 'E') {            // EDA data received
-      curr_EDA = processEDAData(); // Process EDA data
-      if (curr_EDA > max_EDA) {
-        Serial.print("Max EDA assigned: ");
-        Serial.println(curr_EDA, 6);
-        max_EDA = curr_EDA;
-      }
-
-      else if (curr_EDA < min_EDA) {
-        Serial.print("Min EDA assigned: ");
-        Serial.println(curr_EDA, 6);
-        min_EDA = curr_EDA;
-      }
-
-      Serial.print("Current EDA: "); Serial.print(curr_EDA, 6);
-      Serial.print(" | Max EDA: "); Serial.print(max_EDA, 6);
-      Serial.print(" | Min EDA: "); Serial.println(min_EDA, 6);
-      Serial.println("--------------------------------------------------------------");
-      sum_EDA = sum_EDA + curr_EDA;
-      j++;
-    }
-    delay(100);
-    // Serial.print("Calibration iteration = "); Serial.println(calib);
-  }
-}
-void detectLieHR(float HR_baseline) {
-  if (curr_HR > HR_baseline)
-  {
-    Serial.println("Lie detected!");
-    Serial.print("Current HR: ");
-    Serial.print(curr_HR);
-    Serial.print("\t HR baseline: ");
-    Serial.println(HR_baseline);
-    actuateNose();
-  }
-}
-
-
-float hrComparison() {
-  if (s1_avg_HR >= s2_avg_HR && s1_avg_HR >= s3_avg_HR)
-  {
-    lie_flag = 1;
-  }
-
-  // check if n2 is the largest number
-  else if (s2_avg_HR >= s1_avg_HR && s2_avg_HR >= s3_avg_HR)
-  {
-    lie_flag = 2;
-  }
-
-  else
-  {
-    lie_flag = 3;
-  }
-  Serial.print("lie_flag: "); Serial.println(lie_flag);
-}
-
-float findMetrics() {
-  s1_avg_HR = s1_sum_HR / (float)s1_counter;
-  s2_avg_HR = s2_sum_HR / (float)s2_counter;
-  s3_avg_HR = s3_sum_HR / (float)s3_counter;
-  Serial.print("s1_avg_HR: "); Serial.println(s1_avg_HR);
-  Serial.print("s2_avg_HR: "); Serial.println(s2_avg_HR);
-  Serial.print("s3_avg_HR: "); Serial.println(s3_avg_HR);
-}
-
-void actuation() {
-  if (val == 'x' && lie_flag == 1)
-  {
-    actuateNose();
-  }
-
-  else if (val == 'y' && lie_flag == 2)
-  {
-    actuateNose();
-  }
-
-  else if (val == 'z' && lie_flag == 3)
-  {
-    actuateNose();
   }
 }

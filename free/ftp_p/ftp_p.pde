@@ -1,6 +1,7 @@
 // Reads EmotiBit data from an OSC stream and plots data in a window
 import oscP5.*;
 import netP5.*;
+// import gifAnimation.*;
 import processing.serial.*;
 
 // ------------ CHANGE PARAMETERS HERE --------------- //
@@ -29,13 +30,26 @@ float lpFiltVal;
 float hpFiltVal;
 boolean firstFilt = false;
 
+PFont f;
+String intro = "Welcome to the Pneunochio Experiment!";
+
+//String no = "Doesn't seem like that statement is a lie!";
+//String yes = "Is this the lie???";
+
 // recording statements
 int RightPressed=0;
+int statement_counter = 0;
 boolean calibrationCompleted = false;
 // --------------------------------------------------- //
 
 void setup() {
-  size(320, 320);
+  size(1000, 400);
+  f = createFont("Arial",25,true);
+  background(255, 0, 0);
+  fill(0);
+  textFont(f);
+  text(intro,(width/4),height/2);
+  
   /* start oscP5, listening for incoming messages at port 12345 */
   oscP5 = new OscP5(this, oscPort);
   arduinoPort = new Serial(this, arduinoPortName, arduinoBaudRate);
@@ -50,44 +64,12 @@ void draw() {
     float dataEDA = dataListEDA.get(dataListEDA.size() - 1); // get the most recent EDA data point
   
     if (keyPressed){
-      if (key=='c'){
-        println("I am at C");
+      if (key=='s'){
+        println("Starting");  
         arduinoPort.write("C");
-        background(255, 255, 255);       
+        background(255, 255, 255);
       }
-        else if (key=='1')
-        {
-            println("Recording first statement.");       
-            //for (int i=0;  i<10; i++){
-              arduinoPort.write("X");   
-            //}
-        }
-        
-        else if(key=='2'){
-        arduinoPort.write("Y");
-        }
-        
-        else if (key=='3'){
-        arduinoPort.write("Z");  
-        }
-        
-        else if (key=='s'){
-        arduinoPort.write("S"); 
-        }
-        
-        else if (key=='4'){
-        arduinoPort.write("x"); 
-        }
-        else if (key=='5'){
-        arduinoPort.write("y"); 
-        }
-        else if (key=='6'){
-        arduinoPort.write("z"); 
-        }
-        
-      
-      }
-    
+     }
     sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
     }
   }
@@ -125,7 +107,7 @@ void sendToArduino(float dataHR, float dataEDA) {
   
   // HR
   strHR = "H"+String.valueOf((int)dataHR)+"\n";
-  // print("(P -> A) Sending HR data : \t"); println(dataHR);
+  //print("(P -> A) Sending HR data : \t"); println(dataHR);
   arduinoPort.write(strHR); // Send HR data to Arduino as string
    
   // EDA
@@ -158,13 +140,9 @@ void serialEvent(Serial myPort) {
       }
     } else {
       // Process the received data
-    
-        
-      if (val.equals("Calibration completed")) {
-        println("Calibrated successfully. You may now begin recording statements.");
-        
+      if (val.equals("Starting")) {
+        println("Starting emotion monitor");
        }
-      
     }
   }
 }

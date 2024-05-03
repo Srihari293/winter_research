@@ -1,6 +1,7 @@
 // Reads EmotiBit data from an OSC stream and plots data in a window
 import oscP5.*;
 import netP5.*;
+// import gifAnimation.*;
 import processing.serial.*;
 
 // ------------ CHANGE PARAMETERS HERE --------------- //
@@ -29,13 +30,38 @@ float lpFiltVal;
 float hpFiltVal;
 boolean firstFilt = false;
 
+PFont f;
+String intro = "Welcome to the 2 truths and 1 lie. \n\nIf the IDE says requesting contact, refer to 'A' in the user guide. \nOtherwise you are good to go! \n\nPress '1' to record the first statement";
+
+String st1 = "Recording - Statement 1 over the next 10 seconds";
+String st2 = "Recording - Statement 2 over the next 10 seconds";
+String st3 = "Recording - Statement 3 over the next 10 seconds";
+String ready = "Ready to record the next statement";
+String complete = "All statements completed. Press S to save the data";
+
+String saving = "Saving data";
+String saved = "Data saved. Now press 4, 5 and 6 in any order to find the lie";
+
+String st4 = "Guessing if Statement 1 is the lie";
+String st5 = "Guessing if Statement 2 is the lie";
+String st6 = "Guessing if Statement 3 is the lie";
+//String no = "Doesn't seem like that statement is a lie!";
+//String yes = "Is this the lie???";
+
 // recording statements
 int RightPressed=0;
+int statement_counter = 0;
 boolean calibrationCompleted = false;
 // --------------------------------------------------- //
 
 void setup() {
-  size(320, 320);
+  size(1000, 400);
+  f = createFont("Arial",25,true);
+  background(255, 0, 255);
+  fill(0);
+  textFont(f);
+  text(intro,(width/7),height/4);
+  
   /* start oscP5, listening for incoming messages at port 12345 */
   oscP5 = new OscP5(this, oscPort);
   arduinoPort = new Serial(this, arduinoPortName, arduinoBaudRate);
@@ -51,41 +77,69 @@ void draw() {
   
     if (keyPressed){
       if (key=='c'){
-        println("I am at C");
+        println("Calibrating baselines");
         arduinoPort.write("C");
-        background(255, 255, 255);       
-      }
+        background(255, 255, 255);
+    }
         else if (key=='1')
         {
-            println("Recording first statement.");       
-            //for (int i=0;  i<10; i++){
-              arduinoPort.write("X");   
+            println("Recording first statement.");
+            background(255, 255, 255);
+            fill(0);
+            textFont(f);
+            text(st1,(width/7),height/2);
+            arduinoPort.write("X");
+            //statement_counter++;
+            //if (statement_counter == 250){
+            //  
             //}
         }
         
         else if(key=='2'){
-        arduinoPort.write("Y");
+          background(255, 0, 255);
+          fill(0);
+          textFont(f);
+          text(st2,(width/7),height/2);
+          arduinoPort.write("Y");
         }
         
         else if (key=='3'){
-        arduinoPort.write("Z");  
+         background(255, 0, 0);
+         fill(0);
+         textFont(f);
+         text(st3,(width/7),height/2);
+         arduinoPort.write("Z");  
         }
         
         else if (key=='s'){
-        arduinoPort.write("S"); 
+          background(255, 0, 255);
+          fill(0);
+          textFont(f);
+          text(saving,(width/7),height/2);
+          arduinoPort.write("S"); 
         }
         
         else if (key=='4'){
-        arduinoPort.write("x"); 
+          background(255, 0, 255);
+          fill(0);
+          textFont(f);
+          text(st4,(width/7),height/2);
+          arduinoPort.write("x"); 
         }
         else if (key=='5'){
-        arduinoPort.write("y"); 
+          background(255, 0, 255);
+          fill(0);
+          textFont(f);
+          text(st5,(width/7),height/2);
+          arduinoPort.write("y"); 
         }
         else if (key=='6'){
-        arduinoPort.write("z"); 
+          background(255, 0, 255);
+          fill(0);
+          textFont(f);
+          text(st6,(width/7),height/2);
+          arduinoPort.write("z"); 
         }
-        
-      
       }
     
     sendToArduino(dataHR, dataEDA); // Send EDA data to Arduino
@@ -125,7 +179,7 @@ void sendToArduino(float dataHR, float dataEDA) {
   
   // HR
   strHR = "H"+String.valueOf((int)dataHR)+"\n";
-  // print("(P -> A) Sending HR data : \t"); println(dataHR);
+  //print("(P -> A) Sending HR data : \t"); println(dataHR);
   arduinoPort.write(strHR); // Send HR data to Arduino as string
    
   // EDA
@@ -158,13 +212,37 @@ void serialEvent(Serial myPort) {
       }
     } else {
       // Process the received data
-    
-        
       if (val.equals("Calibration completed")) {
         println("Calibrated successfully. You may now begin recording statements.");
-        
        }
       
+      if (val.equals("Statement 1 - Completed")){
+          background(255, 255, 255);
+          fill(0);
+          textFont(f);
+          text(ready,(width/7),height/2);
+      }
+    
+      if (val.equals("Statement 2 - Completed")){
+          background(255, 255, 255);
+          fill(0);
+          textFont(f);
+          text(ready,(width/7),height/2);
+      }
+      
+      if (val.equals("Statement 3 - Completed")){
+          background(255, 255, 255);
+          fill(0);
+          textFont(f);
+          text(complete,(width/7),height/2);
+      }
+      
+      if (val.equals("Calculations completed")){
+          background(255, 255, 255);
+          fill(0);
+          textFont(f);
+          text(saved,(width/7),height/2);
+      }
     }
   }
 }
