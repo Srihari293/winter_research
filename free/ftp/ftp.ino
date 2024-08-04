@@ -165,7 +165,7 @@ void actuateNose() {
   if (state != BLOWING) {
     // Serial.println("Blowing");
 
-    for (c = 0; c < 100; c++)
+    for (c = 0; c < 200; c++)
     {
       // switch on pumps to 50% power
       switchOnPump(2, 100);
